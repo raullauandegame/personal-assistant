@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Assistente - Imagem em Tela Cheia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #000000;
+            font-family: 'Segoe UI', 'Poppins', 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Container principal - modo normal */
+        .normal-mode {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Quando a imagem estiver em tela cheia, o modo normal fica escondido */
+        .normal-mode.hidden {
+            display: none;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+        }
+
+        /* Área do assistente (rosto) */
+        .assistant-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .assistant-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            aspect-ratio: 1 / 1;
+            background: #0a0a0a;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3), 0 20px 40px rgba(0,0,0,0.8);
+            transition: all 0.3s ease;
+        }
+
+        #faceCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .assistant-label {
+            color: #22c55e;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        /* Área de upload */
+        .upload-section {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 2rem;
+            padding: 1.2rem;
+            margin-bottom: 20px;
+            width: 100%;
+            border: 1px dashed #22c55e;
+            text-align: center;
+        }
+
+        .upload-btn {
+            background: linear-gradient(95deg, #15803d, #0a4a2a);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 3rem;
+            font-weight: bold;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px;
+        }
+
+        .upload-btn:hover {
+            background: linear-gradient(95deg, #22c55e, #127a3a);
+            transform: scale(0.97);
+        }
+
+        .reset-btn {
+            background: linear-gradient(95deg, #4a4a4a, #2a2a2a);
+        }
+        
+        .reset-btn:hover {
+            background: linear-gradient(95deg, #666, #444);
+        }
+
+        /* Área de chat */
+        .chat-section {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1.2rem 1.8rem;
+            width: 100%;
+            border: 1px solid #22c55e40;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .chat-bubble {
+            background: #0a0a0ae0;
+            border-radius: 1.8rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.2rem;
+            min-height: 80px;
+            max-height: 130px;
+            overflow-y: auto;
+            border-left: 5px solid #22c55e;
+        }
+
+        .response-text {
+            color: #f0f3fa;
+            font-size: 1.15rem;
+            line-height: 1.45;
+            word-break: break-word;
+            font-weight: 500;
+        }
+
+        .response-text i {
+            color: #86efac;
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .input-field {
+            flex: 4;
+            background: #050505;
+            border: 2px solid #2a2a3a;
+            border-radius: 3rem;
+            padding: 0.85rem 1.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            color: #ffffff;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3);
+        }
+
+        button.send-btn {
+            flex: 1;
+            background: linear-gradient(95deg, #15803d, #0a4a2a);
+            border: none;
+            padding: 0.85rem 1.3rem;
+            border-radius: 3rem;
+            font-weight: bold;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button.send-btn:hover {
+            background: linear-gradient(95deg, #22c55e, #127a3a);
+            transform: scale(0.97);
+        }
+
+        .tiny-note {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            color: #4b5563;
+        }
+
+        /* ===== TELA CHEIA DA IMAGEM ===== */
+        .fullscreen-image-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .fullscreen-image-mode.show {
+            display: flex;
+        }
+
+        .fullscreen-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+            cursor: pointer;
+        }
+
+        /* Botão de fechar tela cheia */
+        .close-fullscreen {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid #22c55e;
+            color: white;
+            font-size: 1.5rem;
+            padding: 12px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 1001;
+            font-weight: bold;
+            transition: 0.2s;
+            font-family: monospace;
+        }
+
+        .close-fullscreen:hover {
+            background: #22c55e;
+            color: black;
+            transform: scale(1.05);
+        }
+
+        /* Chat flutuante na tela cheia */
+        .fullscreen-chat {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 1.5rem;
+            padding: 12px 18px;
+            max-width: 500px;
+            margin: 0 auto;
+            border: 1px solid #22c55e;
+            box-shadow: 0 5px 20px black;
+            z-index: 1001;
+        }
+
+        .fullscreen-chat .response-text {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .fullscreen-chat .input-group {
+            gap: 8px;
+        }
+
+        .fullscreen-chat .input-field {
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .fullscreen-chat .send-btn {
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 650px) {
+            .fullscreen-chat {
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- MODO NORMAL (rosto + chat normal) -->
+    <div class="normal-mode" id="normalMode">
+        <div class="main-container">
+            <div class="assistant-area">
+                <div class="assistant-container">
+                    <canvas id="faceCanvas" width="500" height="500"></canvas>
+                </div>
+                <div class="assistant-label" id="assistantLabel">🎭 ROSTO DUAL • Envie uma imagem e ela ocupará a TELA TODA!</div>
+            </div>
+
+            <div class="upload-section">
+                <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                <button class="upload-btn" id="uploadBtn">📸 Escolher Imagem (TELA CHEIA)</button>
+                <div class="upload-hint">
+                    ⚡ Clique, escolha uma imagem, e ela vai ocupar a TELA TODA! Depois continue conversando comigo.
+                </div>
+            </div>
+
+            <div class="chat-section">
+                <div class="chat-bubble">
+                    <div class="response-text" id="responseMessage">
+                        🎭 <i>Olá! Envie uma imagem e ela vai aparecer em TELA CHEIA. Depois continue falando comigo!</i> 🌗
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="userInput" class="input-field" placeholder="Digite algo para o assistente..." autocomplete="off">
+                    <button id="sendBtn" class="send-btn">💬 Falar</button>
+                </div>
+                <div class="tiny-note">
+                    💡 A imagem ocupará a tela inteira quando você enviar • Clique no X para voltar
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODO TELA CHEIA (imagem ocupando tudo) -->
+    <div class="fullscreen-image-mode" id="fullscreenMode">
+        <button class="close-fullscreen" id="closeFullscreenBtn">✕ Fechar</button>
+        <img class="fullscreen-image" id="fullscreenImage" alt="Imagem em tela cheia">
+        
+        <!-- Chat flutuante dentro da tela cheia -->
+        <div class="fullscreen-chat">
+            <div class="response-text" id="fullscreenResponse">
+                🖼️ <i>Imagem em tela cheia! Continue conversando comigo.</i>
+            </div>
+            <div class="input-group">
+                <input type="text" id="fullscreenInput" class="input-field" placeholder="Digite algo..." autocomplete="off">
+                <button id="fullscreenSendBtn" class="send-btn">💬</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            // ----- ELEMENTOS -----
+            const normalMode = document.getElementById('normalMode');
+            const fullscreenMode = document.getElementById('fullscreenMode');
+            const fullscreenImage = document.getElementById('fullscreenImage');
+            const closeFullscreenBtn = document.getElementById('closeFullscreenBtn');
+            
+            // Elementos do modo normal
+            const canvas = document.getElementById('faceCanvas');
+            const ctx = canvas.getContext('2d');
+            const imageUploadInput = document.getElementById('imageUpload');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const userInput = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const responseDiv = document.getElementById('responseMessage');
+            
+            // Elementos do chat em tela cheia
+            const fullscreenResponse = document.getElementById('fullscreenResponse');
+            const fullscreenInput = document.getElementById('fullscreenInput');
+            const fullscreenSendBtn = document.getElementById('fullscreenSendBtn');
+            
+            // Estado
+            let currentImageUrl = null;
+            let isFullscreen = false;
+            
+            // Tamanho do canvas
+            canvas.width = 500;
+            canvas.height = 500;
+            
+            // Coordenadas do rosto original
+            const centerX = 250, centerY = 250;
+            const faceRadius = 200;
+            const leftEyeX = centerX - 75;
+            const rightEyeX = centerX + 75;
+            const eyeY = centerY - 50;
+            const eyeRadius = 30;
+            const pupilRadius = 13;
+            
+            // ----- FUNÇÃO QUE DESENHA O ROSTO ORIGINAL (dual) -----
+            function drawOriginalFace() {
+                ctx.clearRect(0, 0, 500, 500);
+                
+                // Metade esquerda: pele preta
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(0, 0, centerX, 500);
+                ctx.clip();
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, faceRadius, 0, Math.PI * 2);
+                const gradLeft = ctx.createRadialGradient(centerX-40, centerY-30, 30, centerX, centerY, faceRadius);
+                gradLeft.addColorStop(0, '#1a1a1a');
+                gradLeft.addColorStop(0.7, '#050505');
+                gradLeft.addColorStop(1, '#000000');
+                ctx.fillStyle = gradLeft;
+                ctx.fill();
+                ctx.strokeStyle = '#1f3b1a';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+                
+                // Metade direita: pele normal clara
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(centerX, 0, 500, 500);
+                ctx.clip();
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, faceRadius, 0, Math.PI * 2);
+                const gradRight = ctx.createRadialGradient(centerX+35, centerY-25, 35, centerX, centerY, faceRadius);
+                gradRight.addColorStop(0, '#FAD6B3');
+                gradRight.addColorStop(0.6, '#E8BC8A');
+                gradRight.addColorStop(1, '#CFA06C');
+                ctx.fillStyle = gradRight;
+                ctx.fill();
+                ctx.strokeStyle = '#A65D2E';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+                
+                // Linha divisória
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY - faceRadius + 15);
+                ctx.lineTo(centerX, centerY + faceRadius - 15);
+                ctx.lineWidth = 2.5;
+                ctx.strokeStyle = '#22c55eAA';
+                ctx.setLineDash([6, 8]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Olhos
+                drawEye(leftEyeX, eyeY, eyeRadius, pupilRadius, '#10B981', '#064E3B');
+                drawEye(rightEyeX, eyeY, eyeRadius, pupilRadius, '#EF4444', '#7F1D1D');
+                
+                // Sobrancelhas
+                ctx.beginPath();
+                ctx.moveTo(leftEyeX-32, eyeY-26);
+                ctx.quadraticCurveTo(leftEyeX-8, eyeY-38, leftEyeX+22, eyeY-28);
+                ctx.lineWidth = 4.5;
+                ctx.strokeStyle = '#2E7D32';
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(rightEyeX-22, eyeY-28);
+                ctx.quadraticCurveTo(rightEyeX+8, eyeY-38, rightEyeX+32, eyeY-26);
+                ctx.strokeStyle = '#C2410C';
+                ctx.stroke();
+                
+                // Boca dual
+                const mouthLeft = centerX - 80;
+                const mouthRight = centerX + 80;
+                const mouthTop = centerY + 45;
+                const mouthBottom = centerY + 95;
+                ctx.beginPath();
+                ctx.moveTo(mouthLeft, mouthTop+4);
+                ctx.quadraticCurveTo(centerX, mouthTop-10, mouthRight, mouthTop+4);
+                ctx.lineTo(mouthRight, mouthBottom-6);
+                ctx.quadraticCurveTo(centerX, mouthBottom+10, mouthLeft, mouthBottom-6);
+                ctx.closePath();
+                const gradMouth = ctx.createLinearGradient(mouthLeft, 0, mouthRight, 0);
+                gradMouth.addColorStop(0, '#10B981');
+                gradMouth.addColorStop(0.48, '#10B981');
+                gradMouth.addColorStop(0.5, '#F43F5E');
+                gradMouth.addColorStop(1, '#E11D48');
+                ctx.fillStyle = gradMouth;
+                ctx.fill();
+                ctx.strokeStyle = '#8B3C1C';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(centerX, mouthTop+2);
+                ctx.lineTo(centerX, mouthBottom-4);
+                ctx.strokeStyle = '#FDE047';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Brilhos
+                ctx.beginPath();
+                ctx.ellipse(leftEyeX-20, eyeY+22, 14, 11, 0, 0, Math.PI*2);
+                ctx.fillStyle = '#10B98130';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(rightEyeX+20, eyeY+22, 14, 11, 0, 0, Math.PI*2);
+                ctx.fillStyle = '#EF444430';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(leftEyeX-8, eyeY-6, 3.5, 0, Math.PI*2);
+                ctx.fillStyle = '#FFFFFFDD';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(rightEyeX-8, eyeY-6, 3.5, 0, Math.PI*2);
+                ctx.fill();
+            }
+            
+            function drawEye(x, y, radius, pupilRad, irisColor, darkRing) {
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI*2);
+                ctx.fillStyle = '#FFF5E6';
+                ctx.fill();
+                ctx.strokeStyle = '#7A4C2C';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                const gradIris = ctx.createRadialGradient(x-4, y-3, 5, x, y, radius-7);
+                gradIris.addColorStop(0, irisColor);
+                gradIris.addColorStop(1, darkRing);
+                ctx.beginPath();
+                ctx.arc(x, y, radius-7, 0, Math.PI*2);
+                ctx.fillStyle = gradIris;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x, y, pupilRad, 0, Math.PI*2);
+                ctx.fillStyle = '#0B0E14';
+                ctx.fill();
+            }
+            
+            // ----- FUNÇÃO PARA ABRIR TELA CHEIA COM A IMAGEM -----
+            function openFullscreenWithImage(imageDataUrl) {
+                currentImageUrl = imageDataUrl;
+                fullscreenImage.src = imageDataUrl;
+                fullscreenMode.classList.add('show');
+                isFullscreen = true;
+                
+                // Mensagem especial
+                fullscreenResponse.innerHTML = `🖼️ <i>✨ Imagem em TELA CHEIA! Agora ela ocupa tudo. Continue conversando comigo! ✨</i>`;
+                
+                // Fechar ao clicar na imagem (opcional)
+                fullscreenImage.onclick = () => {
+                    closeFullscreen();
+                };
+            }
+            
+            function closeFullscreen() {
+                fullscreenMode.classList.remove('show');
+                isFullscreen = false;
+                // Limpa o input da tela cheia
+                fullscreenInput.value = '';
+                // Mensagem de volta no modo normal
+                responseDiv.innerHTML = `🎭 <i>🔙 Voltei! A imagem fechou. Envie outra quando quiser.</i> 🌗`;
+            }
+            
+            // ----- SISTEMA DE RESPOSTA (funciona nos dois modos) -----
+            function getAssistantResponse(userMessage, isFromFullscreen) {
+                if (!userMessage || userMessage.trim() === "") {
+                    return "👂 Estou te ouvindo! Pode falar.";
+                }
+                const msg = userMessage.toLowerCase();
+                
+                if (msg.includes("imagem") || msg.includes("foto") || msg.includes("tela cheia")) {
+                    return "🖼️ A imagem está ocupando a tela toda! Legal, né? Fale mais sobre ela!";
+                }
+                if (msg.includes("bonita") || msg.includes("bonito")) {
+                    return "📸 A imagem é linda! Obrigado por compartilhar comigo. Quer enviar outra?";
+                }
+                if (msg.includes("fechar") || msg.includes("sair")) {
+                    return "❌ Clique no botão '✕ Fechar' no canto superior direito para sair da tela cheia.";
+                }
+                if (msg.includes("obrigado")) {
+                    return "🙏 Eu que agradeço! Continue explorando.";
+                }
+                if (msg.includes("oi") || msg.includes("olá")) {
+                    return "👋 Olá! A imagem está em tela cheia. O que você achou?";
+                }
+                
+                const respostas = [
+                    "💬 Estou aqui com a imagem em tela cheia! O que você quer me dizer?",
+                    "🎭 Mesmo com a imagem ocupando tudo, continuo te ouvindo!",
+                    "🖼️ Imagem gigante, hein? Gostou? Pode falar qualquer coisa.",
+                    "🌟 Tela toda preenchida pela sua imagem! Conversa continua.",
+                    "⚡ Assistente presente! A imagem está linda em fullscreen."
+                ];
+                return respostas[Math.floor(Math.random() * respostas.length)];
+            }
+            
+            function updateResponse(message, isFullscreenChat = false) {
+                const reply = getAssistantResponse(message, isFullscreenChat);
+                if (isFullscreenChat) {
+                    fullscreenResponse.innerHTML = `🖼️ <i>${reply}</i> ✨`;
+                } else {
+                    responseDiv.innerHTML = `🎭 <i>${reply}</i> 🌗`;
+                }
+            }
+            
+            // ----- UPLOAD DA IMAGEM E ABRIR TELA CHEIA -----
+            function handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imageData = e.target.result;
+                        openFullscreenWithImage(imageData);
+                        // Mensagem no modo normal (enquanto está em tela cheia, o normal fica oculto mas a mensagem fica)
+                        responseDiv.innerHTML = `🎭 <i>📸 Imagem enviada! Agora ela está em TELA CHEIA. Use o chat flutuante para falar comigo.</i> 🌗`;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert("Por favor, selecione uma imagem válida (JPG, PNG, GIF).");
+                }
+                imageUploadInput.value = '';
+            }
+            
+            // ----- EVENTOS -----
+            uploadBtn.addEventListener('click', () => {
+                imageUploadInput.click();
+            });
+            imageUploadInput.addEventListener('change', handleImageUpload);
+            
+            closeFullscreenBtn.addEventListener('click', closeFullscreen);
+            
+            // Enviar mensagem do modo normal
+            function sendNormalMessage() {
+                const text = userInput.value.trim();
+                if (text === "") {
+                    updateResponse("Diga algo, estou ouvindo!", false);
+                    userInput.value = "";
+                    userInput.focus();
+                    return;
+                }
+                updateResponse(text, false);
+                userInput.value = "";
+                userInput.focus();
+            }
+            
+            // Enviar mensagem do modo tela cheia
+            function sendFullscreenMessage() {
+                const text = fullscreenInput.value.trim();
+                if (text === "") {
+                    fullscreenResponse.innerHTML = `🖼️ <i>Digite algo para conversar comigo enquanto a imagem está em tela cheia!</i>`;
+                    fullscreenInput.value = "";
+                    fullscreenInput.focus();
+                    return;
+                }
+                const reply = getAssistantResponse(text, true);
+                fullscreenResponse.innerHTML = `🖼️ <i>${reply}</i> ✨`;
+                fullscreenInput.value = "";
+                fullscreenInput.focus();
+            }
+            
+            sendBtn.addEventListener('click', sendNormalMessage);
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendNormalMessage();
+                }
+            });
+            
+            fullscreenSendBtn.addEventListener('click', sendFullscreenMessage);
+            fullscreenInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendFullscreenMessage();
+                }
+            });
+            
+            // Desenhar rosto inicial
+            drawOriginalFace();
+            
+            // Mensagem de boas-vindas
+            setTimeout(() => {
+                responseDiv.innerHTML = "🎭 <i>Olá! Envie uma imagem e ela vai ocupar a TELA TODA. Depois continue conversando comigo!</i> 🌗";
+            }, 100);
+        })();
+    </script>
+</body>
+</html>
