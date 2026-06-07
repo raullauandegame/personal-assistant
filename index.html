@@ -1,0 +1,488 @@
+Reiniciar area.innerHTML = "
+alguma coisa
+";
+if(tipo === "velha"){ ...
+    <!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Meus Jogos</title>
+<style>
+body{background:#111;color:white;text-align:center;font-family:Arial;}
+.card{display:inline-block;margin:20px;padding:20px;background:#222;border-radius:10px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<h1>🎮 Meus Jogos</h1>
+
+<div class="card" onclick="mostrar('velha')">Jogo da Velha</div>
+
+<div id="jogo"></div>
+
+<script>
+
+function mostrar(tipo){
+  const area = document.getElementById("jogo");
+  area.innerHTML = ""; // limpa
+
+  if(tipo === "velha"){
+    criarJogoDaVelha(area);
+  }
+}
+
+function criarJogoDaVelha(area){
+
+  const titulo = document.createElement("h2");
+  titulo.textContent = "Jogo da Velha 😈";
+  area.appendChild(titulo);
+
+  const tabuleiro = document.createElement("div");
+  tabuleiro.id="tabuleiro";
+  tabuleiro.style.display="grid";
+  tabuleiro.style.gridTemplateColumns="repeat(3,100px)";
+  tabuleiro.style.gap="5px";
+  tabuleiro.style.justifyContent="center";
+  area.appendChild(tabuleiro);
+
+  const status=document.createElement("p");
+  status.id="status";
+  area.appendChild(status);
+
+  iniciarJogo();
+}
+
+let casas=[];
+let jogoAtivo=true;
+
+function iniciarJogo(){
+  const tabuleiro=document.getElementById("tabuleiro");
+  const status=document.getElementById("status");
+
+  tabuleiro.innerHTML="";
+  casas=Array(9).fill("");
+  jogoAtivo=true;
+  status.textContent="Sua vez (X)";
+
+  for(let i=0;i<9;i++){
+    const casa=document.createElement("div");
+    casa.style.width="100px";
+    casa.style.height="100px";
+    casa.style.background="#333";
+    casa.style.display="flex";
+    casa.style.alignItems="center";
+    casa.style.justifyContent="center";
+    casa.style.fontSize="40px";
+    casa.style.cursor="pointer";
+
+    casa.onclick=()=>jogar(i);
+    tabuleiro.appendChild(casa);
+  }
+}
+
+function jogar(i){
+  if(casas[i]!==""||!jogoAtivo)return;
+
+  casas[i]="X";
+  document.getElementById("tabuleiro").children[i].textContent="X";
+}
+
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>outros Jogos 🔥</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0011ff;
+  color:rgb(25, 59, 212);
+  text-align:center;
+}
+
+h1{
+  margin-top:20px;
+}
+
+.menu{
+  margin:20px;
+}
+
+.card{
+  display:inline-block;
+  background:#1e1e1e;
+  padding:15px 25px;
+  margin:10px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.card:hover{
+  background:#333;
+  transform:scale(1.05);
+}
+
+#jogo{
+  margin-top:20px;
+}
+
+button{
+  padding:8px 15px;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<h1>🎮 Arcade Games</h1>
+
+<div class="menu">
+  <div class="card" onclick="mostrar('velha')">Jogo da Velha</div>
+  <div class="card" onclick="mostrar('tiro')">Jogo de Tiro</div>
+  <div class="card" onclick="mostrar('terror')">Terror</div>
+  <div class="card" onclick="mostrar('clique')">Simulador de Clique</div>
+  <div class="card" onclick="mostrar('reflexo')">Desafio de Reflexo</div>
+</div>
+
+<div id="jogo"></div>
+
+<script>
+
+function mostrar(tipo){
+  const area = document.getElementById("jogo");
+  area.innerHTML="";
+
+  if(tipo==="velha") jogoVelha(area);
+  if(tipo==="tiro") jogoTiro(area);
+  if(tipo==="terror") jogoTerror(area);
+  if(tipo==="clique") jogoClique(area);
+  if(tipo==="reflexo") jogoReflexo(area);
+}
+
+/* ================= JOGO DA VELHA ================= */
+
+function jogoVelha(area){
+  area.innerHTML="<h2>Jogo da Velha</h2><p>Em breve versão completa 😈</p>";
+}
+
+/* ================= JOGO DE TIRO ================= */
+
+function jogoTiro(area){
+  const titulo=document.createElement("h2");
+  titulo.textContent="Jogo de Tiro 🔫";
+  area.appendChild(titulo);
+
+  const alvo=document.createElement("div");
+  alvo.style.width="80px";
+  alvo.style.height="80px";
+  alvo.style.background="red";
+  alvo.style.margin="20px auto";
+  alvo.style.cursor="crosshair";
+  alvo.style.borderRadius="50%";
+  area.appendChild(alvo);
+
+  const pontos=document.createElement("p");
+  let score=0;
+  pontos.textContent="Pontos: 0";
+  area.appendChild(pontos);
+
+  alvo.onclick=()=>{
+    score++;
+    pontos.textContent="Pontos: "+score;
+  };
+}
+
+/* ================= TERROR ================= */
+
+function jogoTerror(area){
+  const titulo=document.createElement("h2");
+  titulo.textContent="Modo Terror 👻";
+  area.appendChild(titulo);
+
+  const msg=document.createElement("p");
+  msg.textContent="Clique na tela se tiver coragem...";
+  area.appendChild(msg);
+
+  area.onclick=()=>{
+    document.body.style.background="greem";
+    msg.textContent="fantasmas exitem";
+  };
+}
+
+/* ================= SIMULADOR DE CLIQUE ================= */
+
+function jogoClique(area){
+  const titulo=document.createElement("h2");
+  titulo.textContent="Simulador de Clique 🖱";
+  area.appendChild(titulo);
+
+  let contador=0;
+
+  const botao=document.createElement("button");
+  botao.textContent="CLIQUE AQUI";
+  area.appendChild(botao);
+
+  const texto=document.createElement("p");
+  texto.textContent="Cliques: 0";
+  area.appendChild(texto);
+
+  botao.onclick=()=>{
+    contador++;
+    texto.textContent="Cliques: "+contador;
+  };
+}
+
+/* ================= DESAFIO DE REFLEXO ================= */
+
+function jogoReflexo(area){
+  const titulo=document.createElement("h2");
+  titulo.textContent="Desafio de Reflexo ⚡";
+  area.appendChild(titulo);
+
+  const botao=document.createElement("button");
+  botao.textContent="Espere ficar verde...";
+  botao.style.background="gray";
+  area.appendChild(botao);
+
+  let tempoInicio;
+
+  setTimeout(()=>{
+    botao.style.background="green";
+    botao.textContent="CLIQUE AGORA!";
+    tempoInicio=Date.now();
+  },Math.random()*3000+2000);
+
+  botao.onclick=()=>{
+    if(botao.style.background==="green"){
+      let tempo=Date.now()-tempoInicio;
+      alert("Seu tempo: "+tempo+"ms");
+    }
+  };
+}
+
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Jogo da Velha</title>
+
+<style>
+body{
+  background:#111;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+}
+
+#tabuleiro{
+  display:grid;
+  grid-template-columns:repeat(3,100px);
+  gap:5px;
+  justify-content:center;
+  margin-top:20px;
+}
+
+.celula{
+  width:100px;
+  height:100px;
+  background:#222;
+  font-size:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+button{
+  margin-top:20px;
+  padding:10px;
+}
+</style>
+</head>
+<body>
+
+<script>
+
+/* ================= JOGO DA VELHA 2 PLAYERS ================= */
+
+let jogadorAtual = "X";
+let estado = ["","","","","","","","",""];
+let ativo = true;
+
+const tabuleiro = document.getElementById("tabuleiro");
+const statusVelha = document.getElementById("statusVelha");
+
+const combinacoes = [
+[0,1,2],[3,4,5],[6,7,8],
+[0,3,6],[1,4,7],[2,5,8],
+[0,4,8],[2,4,6]
+];
+
+tabuleiro.innerHTML = "";
+
+for(let i=0;i<9;i++){
+const celula = document.createElement("div");
+celula.classList.add("celula");
+
+celula.onclick = function(){
+if(estado[i] !== "" || !ativo) return;
+
+estado[i] = jogadorAtual;
+celula.textContent = jogadorAtual;
+
+if(verificarVitoria()){
+statusVelha.textContent = "Jogador " + jogadorAtual + " venceu!";
+ativo = false;
+return;
+}
+
+if(!estado.includes("")){
+statusVelha.textContent = "Empate!";
+ativo = false;
+return;
+}
+
+jogadorAtual = jogadorAtual === "X" ? "O" : "X";
+}
+
+tabuleiro.appendChild(celula);
+}
+
+function verificarVitoria(){
+return combinacoes.some(comb =>
+comb.every(index => estado[index] === jogadorAtual)
+);
+}
+
+function reiniciarVelha(){
+estado = ["","","","","","","","",""];
+jogadorAtual = "X";
+ativo = true;
+statusVelha.textContent = "";
+document.querySelectorAll(".celula").forEach(c => c.textContent = "");
+}
+
+</script>
+<h1>Jogo da Velha (2 Players)</h1>
+
+
+<div id="tabuleiro"></div>
+<p id="status"></p>
+<button onclick="reiniciar()">Reiniciar</button>
+
+<script>
+
+let jogadorAtual = "X";
+let estado = ["","","","","","","","",""];
+let ativo = true;
+
+const tabuleiro = document.getElementById("tabuleiro");
+const status = document.getElementById("status");
+
+const combinacoes = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+for(let i=0;i<9;i++){
+  const celula = document.createElement("div");
+  celula.classList.add("celula");
+
+  celula.onclick = function(){
+    if(estado[i] !== "" || !ativo) return;
+
+    estado[i] = jogadorAtual;
+    celula.textContent = jogadorAtual;
+
+    if(verificar()){
+      status.textContent = "Jogador " + jogadorAtual + " venceu!";
+      ativo = false;
+      return;
+    }
+
+    if(!estado.includes("")){
+      status.textContent = "Empate!";
+      ativo = false;
+      return;
+    }
+
+    jogadorAtual = jogadorAtual === "X" ? "O" : "X";
+  }
+
+  tabuleiro.appendChild(celula);
+}
+
+function verificar(){
+  return combinacoes.some(c =>
+    c.every(index => estado[index] === jogadorAtual)
+  );
+}
+
+function reiniciar(){
+  estado = ["","","","","","","","",""];
+  jogadorAtual = "X";
+  ativo = true;
+  status.textContent = "";
+  document.querySelectorAll(".celula").forEach(c => c.textContent = "");
+}
+
+</script>
+
+</body>
+</html>
+
+<style>
+
+#tabuleiro{
+display:grid;
+grid-template-columns:repeat(3,100px);
+gap:5px;
+justify-content:center;
+margin-top:20px;
+}
+
+.celula{
+width:100px;
+height:100px;
+background:#222;
+color:white;
+font-size:40px;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+border:2px solid white;
+}
+
+</style>
+
+<div id="tabuleiro"></div>
+
+<h1>Jogo da Velha (2 Players)</h1>
+
+<div id="tabuleiro"></div>
+
+<p id="statusVelha"></p>
+
+<button onclick="reiniciarVelha()">Reiniciar</button>
+
+console.log("script rodando");
+
+</script>
+
+<h1>Jogo da Velha (2 Players)</h1>
+
+<div id="tabuleiro"></div>
+<p id="status"></p>
+<button onclick="reiniciar()">Reiniciar</button>
+
+
